@@ -35,10 +35,9 @@ const api = {
                     api.get(`/table/${fileName.name}`)
                         .then(table =>{
                             const tableContainer = document.getElementById('table_container');
-                            console.log(JSON.parse(table[0].data));
-                            const sheet = XLSX.utils.json_to_sheet(JSON.parse(table[0].data));
+                            console.log(table[0].data);
                             document.getElementsByTagName('body')[0].style.height = "auto";
-                            tableContainer.innerHTML = XLSX.utils.sheet_to_html(sheet);
+                            tableContainer.innerHTML = XLSX.utils.sheet_to_html(JSON.parse(table[0].data));
                         });
                 };
                 buttonContainer.appendChild(button);
@@ -49,7 +48,7 @@ const api = {
 const rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
 
 
-function dropHandler(e) {
+/*function dropHandler(e) {
     e.stopPropagation(); e.preventDefault();
     const files = e.dataTransfer.files;
     const f = files[0];
@@ -64,22 +63,51 @@ function dropHandler(e) {
 
         const tableData= XLSX.utils.sheet_to_json(worksheet);
 
-        /*DEL*/
-        document.getElementsByTagName('body')[0].style.height = "auto";
-        const trans = XLSX.utils.json_to_sheet(tableData);
-        document.getElementById('table_container').innerHTML = XLSX.utils.sheet_to_html(trans);
-        /*DEL*/
 
         const body = {
             fileName: f.name,
             tableData
         };
 
+        console.log(tableData);
+        console.log(JSON.stringify(tableData));
+
         handleClick(body);
 
 
         const files = document.getElementsByClassName("files");
 
+
+    };
+    if(rABS) reader.readAsBinaryString(f); else reader.readAsArrayBuffer(f);
+};*/
+
+function dropHandler(e) {
+    e.stopPropagation(); e.preventDefault();
+    const files = e.dataTransfer.files;
+    const f = files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = e.target.result;
+        if(!rABS) data = new Uint8Array(data);
+        const workbook = XLSX.read(data, {type: rABS ? 'binary' : 'array'});
+
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        const dataJSON = XLSX.utils.sheet_to_json(worksheet);
+
+        const body = {
+            fileName: f.name,
+            tableDataSheets: worksheet,
+            tableDataJSON: dataJSON
+        };
+
+        console.log(worksheet);
+
+        handleClick(body);
+
+        const files = document.getElementsByClassName("files");
 
     };
     if(rABS) reader.readAsBinaryString(f); else reader.readAsArrayBuffer(f);
