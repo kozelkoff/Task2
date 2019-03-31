@@ -52,3 +52,7 @@ body {
     border-radius: 1rem;
     padding: 0.7rem;
 }
+
+td{
+    text-align: center;
+}
